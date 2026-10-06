@@ -1,1 +1,39 @@
-[]
+[][
+  {
+    "numeroCNJ": "0001234-56.2024.8.19.0001",
+    "tribunal": "TJRJ",
+    "comarca": "São Gonçalo",
+    "cliente": "Construtora Alfa Ltda"
+  },
+  {
+    "numeroCNJ": "0009876-54.2023.5.01.0001",
+    "tribunal": "TRT1",
+    "comarca": "Niterói",
+    "cliente": "João Pedro Martins"
+  },
+  {
+    "numeroCNJ": "0005432-10.2025.8.19.0003",
+    "tribunal": "TRF2/JFRJ",
+    "comarca": "Itaboraí",
+    "cliente": "Maria Helena Souza"
+  },
+  {
+    "numeroCNJ": "0007777-88.2022.03.9000",
+    "tribunal": "STJ",
+    "comarca": "Brasília/DF",
+    "cliente": "Construtora Alfa Ltda"
+  },
+  {
+    "numeroCNJ": "0001111-22.2021.8.19.0004",
+    "tribunal": "TJRJ",
+    "comarca": "Rio de Janeiro",
+    "cliente": "Transportes Rio Leste Ltda"
+  },
+  {
+    "numeroCNJ": "0003333-44.2020.5.01.0002",
+    "tribunal": "TRT2",
+    "comarca": "São Paulo/SP",
+    "cliente": "Construtora Alfa Ltda"
+  },
+  {
+    "numeroCNJ": "08000-62.2024.8.19.0031
