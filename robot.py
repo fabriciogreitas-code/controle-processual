@@ -2,7 +2,7 @@ import json, os, smtplib, requests
 from datetime import datetime, timezone
 from email.mime.text import MIMEText
 
-BASE = "https://api-publica.datajud.cnj.jus.br/api_publica_{alias}/"
+BASE = "https://api-publica.datajud.cnj.jus.br/api_publica_{alias}/_search"
 ALIASES = {
     "TJRJ": "tjrj", "TRT1": "trt1", "TRT2": "trt2",
     "TRF2/JFRJ": "trf2", "TRF2": "trf2", "STJ": "stj", "STF": "stf",
@@ -16,7 +16,7 @@ def consultar(cnj, trib):
     if not a:
         return []
     url = BASE.format(alias=a)
-    r = requests.post(url, headers={"APIKey": os.environ["DATAJUD_APIKEY"]},
+    r = requests.post(url, headers={"Authorization": "APIKey " + os.environ["DATAJUD_APIKEY"]},
                       json={"query": {"match": {"numeroProcesso": cnj}}}, timeout=60)
     r.raise_for_status()
     hits = r.json().get("hits", {}).get("hits", [])
