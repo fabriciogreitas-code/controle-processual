@@ -11,6 +11,32 @@ ALIASES = {
 def alias(tribunal):
     return ALIASES.get(tribunal.strip().upper())
 
+def carregar_processos():
+    with open("processos_rob.json", encoding="utf-8") as f:
+        dados = json.load(f)
+    if isinstance(dados, dict) and isinstance(dados.get("processos"), list):
+        itens = dados["processos"]
+    elif isinstance(dados, list):
+        itens = dados
+    else:
+        itens = []
+    normalizados = []
+    for p in itens:
+        if isinstance(p, dict):
+            cnj = (p.get("numeroCNJ") or p.get("cnj") or "").strip()
+            trib = (p.get("tribunal") or "").strip()
+        elif isinstance(p, str):
+            cnj = p.strip()
+            trib = ""
+        else:
+            continue
+        if cnj:
+            item = {"numeroCNJ": cnj, "tribunal": trib}
+            if isinstance(p, dict) and p.get("cliente"):
+                item["cliente"] = p["cliente"]
+            normalizados.append(item)
+    return normalizados
+
 def consultar(cnj, trib):
     a = alias(trib)
     if not a:
@@ -34,8 +60,7 @@ def consultar(cnj, trib):
     return []
 
 def main():
-    with open("processos_rob.json", encoding="utf-8") as f:
-        processos = json.load(f)
+    processos = carregar_processos()
     estado = {}
     if os.path.exists("estado.json"):
         with open("estado.json", encoding="utf-8") as f:
