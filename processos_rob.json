@@ -1,4 +1,4 @@
-[][
+[
   {
     "numeroCNJ": "0001234-56.2024.8.19.0001",
     "tribunal": "TJRJ",
@@ -36,4 +36,9 @@
     "cliente": "Construtora Alfa Ltda"
   },
   {
-    "numeroCNJ": "08000-62.2024.8.19.0031
+    "numeroCNJ": "0800056-62.2024.8.19.0031",
+    "tribunal": "TJRJ",
+    "comarca": "São Gonçalo",
+    "cliente": "Construtora Alfa Ltda"
+  }
+]
