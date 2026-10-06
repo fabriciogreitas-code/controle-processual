@@ -1,4 +1,4 @@
-import json, os, smtplib, requests
+import json, os, smtplib, time, requests
 from datetime import datetime, timezone
 from email.mime.text import MIMEText
 
@@ -42,21 +42,28 @@ def consultar(cnj, trib):
     if not a:
         return []
     url = BASE.format(alias=a)
-    r = requests.post(url, headers={"Authorization": "APIKey " + os.environ["DATAJUD_APIKEY"]},
-                      json={"query": {"match": {"numeroProcesso": cnj}}}, timeout=60)
-    r.raise_for_status()
-    hits = r.json().get("hits", {}).get("hits", [])
-    for h in hits:
-        src = h.get("_source", {})
-        if src.get("numeroProcesso") == cnj:
-            movs = []
-            for m in src.get("movimentos", []):
-                data = (m.get("dataHora") or "")[:10]
-                nome = (m.get("nome") or "").strip()
-                if data and nome:
-                    movs.append({"data": data, "descricao": nome})
-            movs.sort(key=lambda x: x["data"])
-            return movs
+    for tentativa in range(5):
+        r = requests.post(url, headers={"Authorization": "APIKey " + os.environ["DATAJUD_APIKEY"]},
+                          json={"query": {"match": {"numeroProcesso": cnj}}}, timeout=60)
+        if r.status_code == 429:
+            espera = int(r.headers.get("Retry-After", "10") or "10")
+            print(f"Limite atingido em {cnj}; aguardando {espera}s...")
+            time.sleep(espera)
+            continue
+        r.raise_for_status()
+        hits = r.json().get("hits", {}).get("hits", [])
+        for h in hits:
+            src = h.get("_source", {})
+            if src.get("numeroProcesso") == cnj:
+                movs = []
+                for m in src.get("movimentos", []):
+                    data = (m.get("dataHora") or "")[:10]
+                    nome = (m.get("nome") or "").strip()
+                    if data and nome:
+                        movs.append({"data": data, "descricao": nome})
+                movs.sort(key=lambda x: x["data"])
+                return movs
+        return []
     return []
 
 def main():
@@ -67,8 +74,10 @@ def main():
             estado = json.load(f)
 
     novidades = []
-    for p in processos:
+    for i, p in enumerate(processos):
         cnj = p["numeroCNJ"]
+        if i > 0:
+            time.sleep(1)
         movs = consultar(cnj, p.get("tribunal", ""))
         vistos = set(estado.get(cnj, []))
         for m in movs:
