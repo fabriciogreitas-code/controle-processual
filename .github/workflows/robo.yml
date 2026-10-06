@@ -1,0 +1,27 @@
+name: Robo DataJud
+on:
+  schedule:
+    - cron: "0 10 * * 1-5"   # 07h00 de Brasília, dias úteis
+  workflow_dispatch:          # botão para testar manualmente
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - run: python robot.py
+        env:
+          DATAJUD_APIKEY: ${{ secrets.DATAJUD_APIKEY }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          EMAIL_DESTINO: ${{ secrets.EMAIL_DESTINO }}
+      - name: Publicar resultado
+        run: |
+          git config user.name "robo-datajud"
+          git config user.email "actions@github.com"
+          git add movimentacoes.json estado.json
+          git diff --cached --quiet || git commit -m "Robo: atualizacao diaria"
+          git push
