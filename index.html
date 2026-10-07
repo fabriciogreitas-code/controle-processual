@@ -48,7 +48,7 @@ table.data th{background:#F8FAFC;text-align:left;padding:.55rem .6rem;border-bot
 table.data td{padding:.55rem .6rem;border-bottom:1px solid var(--borda);vertical-align:top}
 table.data tr:hover td{background:#F8FAFC}
 .badge{display:inline-block;padding:.15rem .55rem;border-radius:20px;font-size:.68rem;font-weight:700;white-space:nowrap}
-.b-verde{background:#DCFCE7;color:#166534}.b-vermelho{background:#FEE2E2;color:#991B1B}.b-amarelo{background:#FEF9C3;color:#854D0E}.b-cinza{background:#F1F5F9;color:#475569}
+.b-verde{background:#DCFCE7;color:#166534}.b-vermelho{background:#FEE2E2;color:#991B1B}.b-laranja{background:#FFEDD5;color:#9A3412}.b-amarelo{background:#FEF9C3;color:#854D0E}.b-cinza{background:#F1F5F9;color:#475569}
 .btn{display:inline-block;background:var(--azul);color:#fff;border:none;padding:.5rem .9rem;border-radius:8px;cursor:pointer;font-size:.82rem;font-weight:600}
 .btn:hover{background:var(--azul2)}.btn.sec{background:#E2E8F0;color:var(--texto)}.btn.sec:hover{background:#CBD5E1}
 .btn.mini{padding:.25rem .55rem;font-size:.72rem;border-radius:6px}.btn.danger{background:var(--vermelho)}.btn.green{background:var(--verde)}
@@ -81,8 +81,8 @@ footer{background:var(--azul);color:#94A3B8;padding:1rem 1.4rem;font-size:.75rem
     <button class="nav-btn ativo" data-tab="dashboard" data-label="Dashboard"><span class="ic">📊</span><span class="lb">Dashboard</span></button>
     <button class="nav-btn" data-tab="processos" data-label="Processos"><span class="ic">⚖️</span><span class="lb">Processos</span></button>
     <button class="nav-btn" data-tab="arquivados" data-label="Arquivados"><span class="ic">🗄️</span><span class="lb">Arquivados</span></button>
-    <button class="nav-btn" data-tab="andamentos" data-label="Andamentos"><span class="ic">📝</span><span class="lb">Andamentos</span></button>
     <button class="nav-btn" data-tab="prazos" data-label="Prazos"><span class="ic">⏰</span><span class="lb">Prazos</span></button>
+    <button class="nav-btn" data-tab="andamentos" data-label="Andamentos"><span class="ic">📝</span><span class="lb">Andamentos</span></button>
     <button class="nav-btn" data-tab="intimacoes" data-label="Intimações"><span class="ic">📬</span><span class="lb">Intimações</span></button>
     <button class="nav-btn" data-tab="agenda" data-label="Agenda"><span class="ic">📅</span><span class="lb">Agenda</span></button>
     <button class="nav-btn" data-tab="relatorios" data-label="Relatórios"><span class="ic">📈</span><span class="lb">Relatórios</span></button>
@@ -100,7 +100,7 @@ footer{background:var(--azul);color:#94A3B8;padding:1rem 1.4rem;font-size:.75rem
 </header>
 <main>
 <section id="tab-dashboard" class="ativa"><div class="kpis" id="kpis"></div>
-<div class="card"><h2>Bem-vindo</h2><div class="helper">Etapa 2 concluída: aba Processos funcionando com cadastro, edição, arquivamento e ficha completa.</div></div>
+<div class="card"><h2>Bem-vindo</h2><div class="helper">Etapas 1 a 3 concluídas: sistema recuperado, Processos e Clientes funcionando e Prazos com contagem em dias úteis (feriados do RJ).</div></div>
 </section>
 <section id="tab-processos"><div class="card">
   <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.6rem">
@@ -118,8 +118,14 @@ footer{background:var(--azul);color:#94A3B8;padding:1rem 1.4rem;font-size:.75rem
   <div class="filtros"><input id="fArqBusca" placeholder="🔍 Buscar…" oninput="app.renderArquivados()" style="flex:1;min-width:180px"></div>
   <div class="tbl-wrap"><table class="data" id="tblArquivados"></table></div>
 </div></section>
+<section id="tab-prazos"><div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.6rem">
+    <div><h2>Agenda de Prazos</h2><div class="helper">Contagem em dias úteis com feriados do RJ. Em dobro = multiplicador 2.</div></div>
+    <button class="btn" onclick="app.modalPrazo(null)">+ Novo Prazo</button>
+  </div>
+  <div class="tbl-wrap"><table class="data" id="tblPrazos"></table></div>
+</div></section>
 <section id="tab-andamentos"><div class="card"><h2>Andamentos</h2><div class="helper">Em reconstrução — próxima etapa.</div></div></section>
-<section id="tab-prazos"><div class="card"><h2>Prazos</h2><div class="helper">Em reconstrução — próxima etapa.</div></div></section>
 <section id="tab-intimacoes"><div class="card"><h2>Intimações</h2><div class="helper">Em reconstrução.</div></div></section>
 <section id="tab-agenda"><div class="card"><h2>Agenda</h2><div class="helper">Em reconstrução.</div></div></section>
 <section id="tab-relatorios"><div class="card"><h2>Relatórios</h2><div class="helper">Em reconstrução.</div></div></section>
@@ -167,18 +173,36 @@ footer{background:var(--azul);color:#94A3B8;padding:1rem 1.4rem;font-size:.75rem
   <div class="modal-acoes"><button class="btn sec" onclick="app.fechar('mdCliente')">Cancelar</button><button class="btn" onclick="app.salvarCliente()">Salvar Cliente</button></div>
 </div></div>
 
+<div class="modal-bg" id="mdPrazo"><div class="modal"><h3 id="mdPrazoTitulo">Novo Prazo</h3>
+  <div class="fgrid">
+    <div class="fgroup"><label>Processo *</label><select id="zProc"></select></div>
+    <div class="fgroup"><label>Motivo / Peça *</label><input id="zMotivo" placeholder="Contestação, Apelação…"></div>
+    <div class="fgroup"><label>Regime</label><select id="zRegime" onchange="document.getElementById('fgZVenc').style.display=this.value==='dias_corridos'?'block':'none'"><option value="dias_uteis">Dias Úteis (Feriados RJ)</option><option value="dias_corridos">Dias Corridos</option></select></div>
+    <div class="fgroup"><label>Quantidade de Dias</label><input id="zDias" type="number" min="1" value="15"></div>
+    <div class="fgroup"><label>Multiplicador</label><select id="zMult"><option value="1">1 (Simples)</option><option value="2">2 (Em dobro)</option></select></div>
+    <div class="fgroup"><label>Data de Início *</label><input id="zInicio" type="date"></div>
+    <div class="fgroup" id="fgZVenc" style="display:none"><label>Vencimento Manual</label><input id="zVenc" type="date"></div>
+    <div class="fgroup"><label>Status</label><select id="zStatus"><option>Pendente</option><option>Concluído</option><option>Cancelado</option></select></div>
+  </div>
+  <div class="modal-acoes"><button class="btn sec" onclick="app.fechar('mdPrazo')">Cancelar</button><button class="btn" onclick="app.salvarPrazo()">Salvar Prazo</button></div>
+</div></div>
+
 <div class="modal-bg" id="mdFicha"><div class="modal" style="max-width:900px"><div id="fichaConteudo"></div>
   <div class="modal-acoes"><button class="btn sec" onclick="app.fechar('mdFicha')">Fechar</button></div>
 </div></div>
-
 <script>
-/* ETAPA 2 — BASE + PROCESSOS + CLIENTES */
+/* ETAPA 3 — BASE + PROCESSOS + CLIENTES + PRAZOS (DIAS ÚTEIS) */
 const LS='ff_controle_dados';
+const FERIADOS=new Set(['2026-01-01','2026-01-20','2026-02-16','2026-02-17','2026-02-18','2026-03-20','2026-04-03','2026-04-21','2026-04-23','2026-04-24','2026-05-01','2026-06-04','2026-09-07','2026-10-12','2026-10-15','2026-10-28','2026-11-02','2026-11-15','2026-11-20','2026-12-08','2026-12-25','2027-01-01','2027-02-08','2027-02-09','2027-02-10','2027-03-26','2027-04-21','2027-04-23','2027-05-01','2027-05-27','2027-09-07','2027-10-12','2027-11-02','2027-11-15','2027-11-20','2027-12-25']);
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const hojeISO=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const fmtData=d=>d?d.split('-').reverse().join('/'):'—';
 const fmtMoeda=v=>{v=parseFloat(String(v||'0').replace(/\./g,'').replace(',','.'))||0;return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})};
 const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const somaDias=(iso,n)=>{const d=new Date(iso+'T12:00');d.setDate(d.getDate()+n);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const diffDias=(a,b)=>Math.round((new Date(b+'T12:00')-new Date(a+'T12:00'))/86400000);
+const ehUtil=iso=>{const w=new Date(iso+'T12:00').getDay();return w!==0&&w!==6&&!FERIADOS.has(iso)};
+function addUteis(ini,n){let d=ini,i=0;while(i<n){d=somaDias(d,1);if(ehUtil(d))i++}return d}
 const app={
 data:null,editId:null,fichaId:null,
 carregar(){
@@ -211,13 +235,16 @@ trocarAba(t){document.querySelectorAll('section').forEach(s=>s.classList.remove(
  if(t==='dashboard')this.renderDashboard();
  if(t==='processos')this.renderProcessos();
  if(t==='arquivados')this.renderArquivados();
+ if(t==='prazos')this.renderPrazos();
  if(t==='cadastro')this.renderClientes();
  if(window.innerWidth<=900)document.getElementById('sidebar').classList.remove('expandido')},
 relogio(){const n=new Date();const dias=['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];const p=x=>String(x).padStart(2,'0');
  document.getElementById('relogio').innerHTML='<small>'+dias[n.getDay()]+', '+p(n.getDate())+'/'+p(n.getMonth()+1)+'/'+n.getFullYear()+'</small>'+p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds())},
-renderDashboard(){const d=this.data;
+renderDashboard(){const d=this.data;const h=hojeISO();
+const venc=d.prazos.filter(z=>z.status==='Pendente'&&this.vencimento(z)<h).length;
  document.getElementById('kpis').innerHTML=[
   ['Processos Ativos',d.processos.filter(p=>p.status!=='Arquivado').length,'azul'],
+  ['Prazos Vencidos',venc,'vermelho'],
   ['Clientes',d.clientes.length,'roxo'],
   ['Andamentos',d.andamentos.length,'amarelo'],
   ['Prazos',d.prazos.length,'laranja']
@@ -230,9 +257,10 @@ maskMoeda(v){v=v.replace(/\D/g,'');return v?(parseInt(v)/100).toLocaleString('pt
 cliente(id){return this.data.clientes.find(c=>c.id===id)},
 proc(id){return this.data.processos.find(p=>p.id===id)},
 partes(p){const c=this.cliente(p.clienteId);return (c?c.nome:'—')+(p.parteContraria?' × '+p.parteContraria:'')},
+nomeProc(id){const p=this.proc(id);return p?p.numeroCNJ:'—'},
+vencimento(z){if(z.regime==='dias_corridos')return z.vencManual||somaDias(z.dataInicio,(+z.dias||0)*(+z.multiplicador||1));return addUteis(z.dataInicio,(+z.dias||0)*(+z.multiplicador||1))},
 val(id){const el=document.getElementById(id);return el?el.value.trim():''},
 fechar(id){document.getElementById(id).classList.remove('aberto');this.editId=null},
-/* ---------- processos ---------- */
 renderProcessos(){const q=(document.getElementById('fProcBusca').value||'').toLowerCase();const fs=document.getElementById('fProcStatus').value;
 const lista=this.data.processos.filter(p=>p.status!=='Arquivado').filter(p=>!fs||p.status===fs).filter(p=>!q||[p.numeroCNJ,this.partes(p),p.vara,p.comarca].join(' ').toLowerCase().includes(q));
 document.getElementById('tblProcessos').innerHTML='<thead><tr><th>Nº CNJ</th><th>Cliente × Parte</th><th>Ação</th><th>Tribunal</th><th>Comarca/Vara</th><th>Fase</th><th>Status</th><th>Ações</th></tr></thead><tbody>'+
@@ -241,6 +269,11 @@ renderArquivados(){const q=(document.getElementById('fArqBusca').value||'').toLo
 const lista=this.data.processos.filter(p=>p.status==='Arquivado').filter(p=>!q||[p.numeroCNJ,this.partes(p)].join(' ').toLowerCase().includes(q));
 document.getElementById('tblArquivados').innerHTML='<thead><tr><th>Nº CNJ</th><th>Cliente × Parte</th><th>Ação</th><th>Arquivado em</th><th>Ações</th></tr></thead><tbody>'+
 (lista.length?lista.map(p=>'<tr><td>'+esc(p.numeroCNJ)+'</td><td>'+esc(this.partes(p))+'</td><td>'+esc(p.tipoAcao||'—')+'</td><td>'+fmtData(p.dataArquivamento)+'</td><td><button class="btn mini green" onclick="app.reativar(\''+p.id+'\')">Reativar</button></td></tr>').join(''):'<tr><td colspan="5" style="text-align:center;color:var(--cinza);padding:2rem">Nenhum processo arquivado.</td></tr>')+'</tbody>'},
+renderPrazos(){const h=hojeISO();
+const lista=this.data.prazos.slice().sort((a,b)=>this.vencimento(a).localeCompare(this.vencimento(b)));
+document.getElementById('tblPrazos').innerHTML='<thead><tr><th>Processo</th><th>Motivo</th><th>Regime</th><th>Início</th><th>Vencimento</th><th>Dias restantes</th><th>Status</th><th>Ações</th></tr></thead><tbody>'+
+(lista.length?lista.map(z=>{const v=this.vencimento(z);const rest=diffDias(h,v);const cls=z.status!=='Pendente'?'b-cinza':rest<0?'b-vermelho':rest<=3?'b-laranja':rest<=7?'b-amarelo':'b-verde';
+return '<tr><td>'+esc(this.nomeProc(z.processoId))+'</td><td>'+esc(z.motivo)+'</td><td>'+(z.regime==='dias_corridos'?'Corridos':'Úteis')+' ('+z.dias+'d'+(+z.multiplicador>1?' ×'+z.multiplicador:'')+')</td><td>'+fmtData(z.dataInicio)+'</td><td>'+fmtData(v)+'</td><td><span class="badge '+cls+'">'+(z.status!=='Pendente'?'—':rest<0?Math.abs(rest)+'d vencido':rest+'d')+'</span></td><td><span class="badge '+(z.status==='Concluído'?'b-verde':z.status==='Cancelado'?'b-cinza':'b-amarelo')+'">'+esc(z.status)+'</span></td><td><button class="btn mini sec" onclick="app.modalPrazo(\''+z.id+'\')">Editar</button> <button class="btn mini danger" onclick="app.excluirPrazo(\''+z.id+'\')">Excluir</button></td></tr>'}).join(''):'<tr><td colspan="8" style="text-align:center;color:var(--cinza);padding:2rem">Nenhum prazo cadastrado.</td></tr>')+'</tbody>'},
 modalProc(id){this.editId=id||null;const d=this.data;
 const sel=document.getElementById('pCliente');
 sel.innerHTML='<option value="">(selecione)</option>'+d.clientes.map(c=>'<option value="'+c.id+'">'+esc((c.tratamento?c.tratamento+' ':'')+c.nome)+'</option>').join('');
@@ -256,118 +289,21 @@ else{this.data.processos.push(Object.assign({id:uid(),despesas:[],honorariosLanc
 this.salvar();this.fechar('mdProcesso');this.renderProcessos()},
 arquivar(id){const p=this.proc(id);if(confirm('Arquivar o processo '+p.numeroCNJ+'?')){p.status='Arquivado';p.dataArquivamento=hojeISO();this.salvar();this.renderProcessos()}},
 reativar(id){const p=this.proc(id);p.status='Ativo';p.dataArquivamento=null;this.salvar();this.renderArquivados()},
-verFicha(id){const p=this.proc(id);if(!p)return;this.fichaId=id;const c=this.cliente(p.clienteId);
-const ands=this.data.andamentos.filter(a=>a.processoId===id).sort((a,b)=>(b.data||'').localeCompare(a.data||''));
-const przs=this.data.prazos.filter(z=>z.processoId===id);
-let html='<div class="ficha-top"><div class="cnj-big">'+esc(p.numeroCNJ)+'</div><div style="font-size:.85rem;margin-top:.2rem">'+esc(c?(c.tratamento?c.tratamento+' ':'')+c.nome:'—')+(p.parteContraria?' × '+esc(p.parteContraria):'')+'</div><div class="badges"><span class="badge">'+esc(p.status||'Ativo')+'</span><span class="badge">'+esc(p.tipoAcao||'—')+'</span><span class="badge">'+esc(p.tribunal||'—')+'</span></div></div>';
-html+='<div class="subcard"><h4>Dados do Processo</h4><div class="fgrid">'+
-[['Comarca',p.comarca],['Vara / Cartório',p.vara],['Fase',p.fase],['Polo',p.polo],['Advogado',p.advogado],['Valor da Causa',p.valorCausa?fmtMoeda(p.valorCausa):'—']].map(x=>'<div><small style="color:var(--cinza);font-weight:700">'+x[0]+'</small><div>'+esc(x[1]||'—')+'</div></div>').join('')+'</div>'+(p.obs?'<div style="margin-top:.6rem;font-size:.82rem"><strong>Obs.:</strong> '+esc(p.obs)+'</div>':'')+'</div>';
-html+='<div class="subcard"><h4>Andamentos ('+ands.length+')</h4>'+(ands.length?ands.map(a=>'<div style="padding:.4rem 0;border-bottom:1px dashed var(--borda);font-size:.82rem"><strong>'+fmtData(a.data)+'</strong> · '+esc(a.tipo)+'<br>'+esc(a.descricao)+'</div>').join(''):'<div style="color:var(--cinza);font-size:.82rem">Nenhum andamento registrado.</div>')+'</div>';
-html+='<div class="subcard"><h4>Prazos ('+przs.length+')</h4>'+(przs.length?przs.map(z=>'<div style="font-size:.82rem;padding:.3rem 0">👉 <strong>'+esc(z.motivo||'—')+'</strong></div>').join(''):'<div style="color:var(--cinza);font-size:.82rem">Nenhum prazo cadastrado.</div>')+'</div>';
-document.getElementById('fichaConteudo').innerHTML=html;document.getElementById('mdFicha').classList.add('aberto')},
-/* ---------- clientes ---------- */
-renderClientes(){const d=this.data;
-document.getElementById('tblClientes').innerHTML='<thead><tr><th>Nome</th><th>CPF/CNPJ</th><th>Cidade</th><th>Telefone</th><th>Processos</th><th>Ações</th></tr></thead><tbody>'+
-(d.clientes.length?d.clientes.map(c=>'<tr><td>'+esc((c.tratamento?c.tratamento+' ':'')+c.nome)+'</td><td>'+esc(c.doc||'—')+'</td><td>'+esc(c.cidade||'—')+'</td><td>'+esc(c.telefone||'—')+'</td><td>'+d.processos.filter(p=>p.clienteId===c.id).length+'</td><td><button class="btn mini sec" onclick="app.modalCli(\''+c.id+'\')">Editar</button> <button class="btn mini danger" onclick="app.excluirCliente(\''+c.id+'\')">Excluir</button></td></tr>').join(''):'<tr><td colspan="6" style="text-align:center;color:var(--cinza);padding:2rem">Nenhum cliente cadastrado.</td></tr>')+'</tbody>'},
-modalCli(id){this.editId=id||null;const set=(k,v)=>{document.getElementById(k).value=v||''};
-if(id){const c=this.cliente(id);document.getElementById('mdCliTitulo').textContent='Editar Cliente';
- set('cTrat',c.tratamento);set('cNome',c.nome);set('cDoc',c.doc);set('cCidade',c.cidade);set('cFone',c.telefone)}
-else{document.getElementById('mdCliTitulo').textContent='Novo Cliente';['cTrat','cNome','cDoc','cCidade','cFone'].forEach(k=>set(k,''))}
-document.getElementById('mdCliente').classList.add('aberto')},
-salvarCliente(){if(!this.val('cNome')){alert('Preencha o nome do cliente.');return}
-const rec={tratamento:this.val('cTrat'),nome:this.val('cNome'),doc:this.val('cDoc'),cidade:this.val('cCidade'),telefone:this.val('cFone')};
-if(this.editId){Object.assign(this.cliente(this.editId),rec)}else{this.data.clientes.push(Object.assign({id:uid()},rec))}
-this.salvar();this.fechar('mdCliente');this.renderClientes()},
-excluirCliente(id){if(!confirm('Excluir este cliente? Os processos vinculados permanecem, mas ficarão sem cliente.'))return;
-this.data.clientes=this.data.clientes.filter(c=>c.id!==id);this.salvar();this.renderClientes()}
-};
-app.init();
-</script>
-</body>
- <script>
-/* ETAPA 2 — BASE + PROCESSOS + CLIENTES */
-const LS='ff_controle_dados';
-const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-const hojeISO=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-const fmtData=d=>d?d.split('-').reverse().join('/'):'—';
-const fmtMoeda=v=>{v=parseFloat(String(v||'0').replace(/\./g,'').replace(',','.'))||0;return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})};
-const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const app={
-data:null,editId:null,fichaId:null,
-carregar(){
- try{const r=localStorage.getItem(LS);if(r)this.data=JSON.parse(r)}catch(e){this.data=null}
- if(!this.data||!Array.isArray(this.data.processos)){
-  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);
-   try{const v=JSON.parse(localStorage.getItem(k));
-    if(v&&Array.isArray(v.processos)&&v.processos.length){this.data=v;break}}catch(e){}}
- }
- if(!this.data||!Array.isArray(this.data.processos))this.data={clientes:[],processos:[],andamentos:[],prazos:[],intimacoes:[],agenda:[],config:{roboUrl:'',roboProcessadas:[],escritorio:{nome:'Fabrício Freitas Advocacia',email:'freitas_advogados@yahoo.com.br',telefone:'(21) 2725-4167'}},listas:{}};
- const d=this.data;
- d.clientes=d.clientes||[];d.processos=d.processos||[];d.andamentos=d.andamentos||[];d.prazos=d.prazos||[];d.intimacoes=d.intimacoes||[];d.agenda=d.agenda||[];
- d.config=d.config||{};d.config.escritorio=d.config.escritorio||{nome:'Fabrício Freitas Advocacia',email:'freitas_advogados@yahoo.com.br',telefone:'(21) 2725-4167'};
- d.listas=d.listas||{};
- this.salvar();
-},
-salvar(){localStorage.setItem(LS,JSON.stringify(this.data))},
-init(){
- this.carregar();
- document.getElementById('btnToggle').onclick=()=>{const sb=document.getElementById('sidebar');
-  if(window.innerWidth<=900){sb.classList.toggle('expandido')}
-  else{sb.classList.toggle('collapsed');document.getElementById('main').classList.toggle('expanded')}};
- document.querySelectorAll('.nav-btn').forEach(b=>b.onclick=()=>this.trocarAba(b.dataset.tab));
- this.relogio();setInterval(()=>this.relogio(),1000);
- this.renderDashboard();
-},
-trocarAba(t){document.querySelectorAll('section').forEach(s=>s.classList.remove('ativa'));
- document.getElementById('tab-'+t).classList.add('ativa');
- document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('ativo',b.dataset.tab===t));
- if(t==='dashboard')this.renderDashboard();
- if(t==='processos')this.renderProcessos();
- if(t==='arquivados')this.renderArquivados();
- if(t==='cadastro')this.renderClientes();
- if(window.innerWidth<=900)document.getElementById('sidebar').classList.remove('expandido')},
-relogio(){const n=new Date();const dias=['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];const p=x=>String(x).padStart(2,'0');
- document.getElementById('relogio').innerHTML='<small>'+dias[n.getDay()]+', '+p(n.getDate())+'/'+p(n.getMonth()+1)+'/'+n.getFullYear()+'</small>'+p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds())},
-renderDashboard(){const d=this.data;
- document.getElementById('kpis').innerHTML=[
-  ['Processos Ativos',d.processos.filter(p=>p.status!=='Arquivado').length,'azul'],
-  ['Clientes',d.clientes.length,'roxo'],
-  ['Andamentos',d.andamentos.length,'amarelo'],
-  ['Prazos',d.prazos.length,'laranja']
- ].map(k=>'<div class="kpi '+k[2]+'"><div class="num">'+k[1]+'</div><div class="lbl">'+k[0]+'</div></div>').join('');
-},
-maskCNJ(v){v=v.replace(/\D/g,'').slice(0,20);let f=v.slice(0,7);if(v.length>7)f+='-'+v.slice(7,9);if(v.length>9)f+='.'+v.slice(9,13);if(v.length>13)f+='.'+v.slice(13,14);if(v.length>14)f+='.'+v.slice(14,16);if(v.length>16)f+='.'+v.slice(16,20);return f},
-maskDoc(v){v=v.replace(/\D/g,'');if(v.length>11){v=v.slice(0,14);return v.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2})/,(m,a,b,c,d,e)=>a+'.'+b+'.'+c+'/'+d+(e?'-'+e:''))}v=v.slice(0,11);return v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/,(m,a,b,c,d)=>a+'.'+b+'.'+c+(d?'-'+d:''))},
-maskFone(v){v=v.replace(/\D/g,'').slice(0,11);if(v.length<=10)return v.replace(/(\d{2})(\d{4})(\d{0,4})/,(m,a,b,c)=>'('+a+') '+b+(c?'-'+c:''));return v.replace(/(\d{2})(\d{5})(\d{0,4})/,(m,a,b,c)=>'('+a+') '+b+(c?'-'+c:''))},
-maskMoeda(v){v=v.replace(/\D/g,'');return v?(parseInt(v)/100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):''},
-cliente(id){return this.data.clientes.find(c=>c.id===id)},
-proc(id){return this.data.processos.find(p=>p.id===id)},
-partes(p){const c=this.cliente(p.clienteId);return (c?c.nome:'—')+(p.parteContraria?' × '+p.parteContraria:'')},
-val(id){const el=document.getElementById(id);return el?el.value.trim():''},
-fechar(id){document.getElementById(id).classList.remove('aberto');this.editId=null},
-renderProcessos(){const q=(document.getElementById('fProcBusca').value||'').toLowerCase();const fs=document.getElementById('fProcStatus').value;
-const lista=this.data.processos.filter(p=>p.status!=='Arquivado').filter(p=>!fs||p.status===fs).filter(p=>!q||[p.numeroCNJ,this.partes(p),p.vara,p.comarca].join(' ').toLowerCase().includes(q));
-document.getElementById('tblProcessos').innerHTML='<thead><tr><th>Nº CNJ</th><th>Cliente × Parte</th><th>Ação</th><th>Tribunal</th><th>Comarca/Vara</th><th>Fase</th><th>Status</th><th>Ações</th></tr></thead><tbody>'+
-(lista.length?lista.map(p=>'<tr><td><a href="#" onclick="app.verFicha(\''+p.id+'\');return false" style="color:var(--azul);font-weight:700">'+esc(p.numeroCNJ)+'</a></td><td>'+esc(this.partes(p))+'</td><td>'+esc(p.tipoAcao||'—')+'</td><td>'+esc(p.tribunal||'—')+'</td><td>'+esc(p.comarca||'—')+'<br><small>'+esc(p.vara||'')+'</small></td><td>'+esc(p.fase||'—')+'</td><td><span class="badge '+(p.status==='Ativo'?'b-verde':'b-amarelo')+'">'+esc(p.status)+'</span></td><td><button class="btn mini" onclick="app.verFicha(\''+p.id+'\')">Ficha</button> <button class="btn mini sec" onclick="app.modalProc(\''+p.id+'\')">Editar</button> <button class="btn mini sec" onclick="app.arquivar(\''+p.id+'\')">Arquivar</button></td></tr>').join(''):'<tr><td colspan="8" style="text-align:center;color:var(--cinza);padding:2rem">Nenhum processo encontrado.</td></tr>')+'</tbody>'},
-renderArquivados(){const q=(document.getElementById('fArqBusca').value||'').toLowerCase();
-const lista=this.data.processos.filter(p=>p.status==='Arquivado').filter(p=>!q||[p.numeroCNJ,this.partes(p)].join(' ').toLowerCase().includes(q));
-document.getElementById('tblArquivados').innerHTML='<thead><tr><th>Nº CNJ</th><th>Cliente × Parte</th><th>Ação</th><th>Arquivado em</th><th>Ações</th></tr></thead><tbody>'+
-(lista.length?lista.map(p=>'<tr><td>'+esc(p.numeroCNJ)+'</td><td>'+esc(this.partes(p))+'</td><td>'+esc(p.tipoAcao||'—')+'</td><td>'+fmtData(p.dataArquivamento)+'</td><td><button class="btn mini green" onclick="app.reativar(\''+p.id+'\')">Reativar</button></td></tr>').join(''):'<tr><td colspan="5" style="text-align:center;color:var(--cinza);padding:2rem">Nenhum processo arquivado.</td></tr>')+'</tbody>'},
-modalProc(id){this.editId=id||null;const d=this.data;
-const sel=document.getElementById('pCliente');
-sel.innerHTML='<option value="">(selecione)</option>'+d.clientes.map(c=>'<option value="'+c.id+'">'+esc((c.tratamento?c.tratamento+' ':'')+c.nome)+'</option>').join('');
+modalPrazo(id){this.editId=id||null;const d=this.data;
+const sel=document.getElementById('zProc');
+sel.innerHTML='<option value="">(selecione)</option>'+d.processos.filter(p=>p.status!=='Arquivado').map(p=>'<option value="'+p.id+'">'+esc(p.numeroCNJ)+'</option>').join('');
 const set=(k,v)=>{document.getElementById(k).value=v||''};
-if(id){const p=this.proc(id);document.getElementById('mdProcTitulo').textContent='Editar Processo';
- set('pCNJ',p.numeroCNJ);set('pCliente',p.clienteId);set('pPolo',p.polo);set('pParte',p.parteContraria);set('pAcao',p.tipoAcao);set('pTribunal',p.tribunal);set('pComarca',p.comarca);set('pVara',p.vara);set('pFase',p.fase);set('pStatus',p.status);set('pValor',p.valorCausa);set('pAdv',p.advogado);set('pObs',p.obs)}
-else{document.getElementById('mdProcTitulo').textContent='Novo Processo';['pCNJ','pCliente','pPolo','pParte','pAcao','pTribunal','pComarca','pVara','pFase','pValor','pAdv','pObs'].forEach(k=>set(k,''));document.getElementById('pStatus').value='Ativo'}
-document.getElementById('mdProcesso').classList.add('aberto')},
-salvarProcesso(){if(!this.val('pCNJ')||!this.val('pCliente')){alert('Preencha o Número CNJ e o Cliente.');return}
-const rec={numeroCNJ:this.val('pCNJ'),clienteId:this.val('pCliente'),polo:this.val('pPolo'),parteContraria:this.val('pParte'),tipoAcao:this.val('pAcao'),tribunal:this.val('pTribunal'),comarca:this.val('pComarca'),vara:this.val('pVara'),fase:this.val('pFase'),status:this.val('pStatus')||'Ativo',valorCausa:this.val('pValor'),advogado:this.val('pAdv'),obs:this.val('pObs')};
-if(this.editId){Object.assign(this.proc(this.editId),rec)}
-else{this.data.processos.push(Object.assign({id:uid(),despesas:[],honorariosLancamentos:[],destaques:[],dataCadastro:hojeISO(),dataArquivamento:null},rec))}
-this.salvar();this.fechar('mdProcesso');this.renderProcessos()},
-arquivar(id){const p=this.proc(id);if(confirm('Arquivar o processo '+p.numeroCNJ+'?')){p.status='Arquivado';p.dataArquivamento=hojeISO();this.salvar();this.renderProcessos()}},
-reativar(id){const p=this.proc(id);p.status='Ativo';p.dataArquivamento=null;this.salvar();this.renderArquivados()},
+if(id){const z=d.prazos.find(x=>x.id===id);document.getElementById('mdPrazoTitulo').textContent='Editar Prazo';
+ set('zProc',z.processoId);set('zMotivo',z.motivo);set('zRegime',z.regime);set('zDias',z.dias);set('zMult',z.multiplicador||1);set('zInicio',z.dataInicio);set('zVenc',z.vencManual);set('zStatus',z.status);
+ document.getElementById('fgZVenc').style.display=z.regime==='dias_corridos'?'block':'none'}
+else{document.getElementById('mdPrazoTitulo').textContent='Novo Prazo';['zProc','zMotivo','zInicio','zVenc'].forEach(k=>set(k,''));set('zDias','15');set('zMult','1');set('zRegime','dias_uteis');set('zStatus','Pendente');document.getElementById('fgZVenc').style.display='none'}
+document.getElementById('mdPrazo').classList.add('aberto')},
+salvarPrazo(){if(!this.val('zProc')||!this.val('zMotivo')||!this.val('zInicio')){alert('Preencha Processo, Motivo e Data de Início.');return}
+const rec={processoId:this.val('zProc'),motivo:this.val('zMotivo'),regime:this.val('zRegime')||'dias_uteis',dias:this.val('zDias')||15,multiplicador:this.val('zMult')||1,dataInicio:this.val('zInicio'),vencManual:this.val('zVenc'),status:this.val('zStatus')||'Pendente'};
+if(this.editId){Object.assign(this.data.prazos.find(z=>z.id===this.editId),rec)}
+else{this.data.prazos.push(Object.assign({id:uid()},rec))}
+this.salvar();this.fechar('mdPrazo');this.renderPrazos()},
+excluirPrazo(id){if(!confirm('Excluir este prazo?'))return;this.data.prazos=this.data.prazos.filter(z=>z.id!==id);this.salvar();this.renderPrazos()},
 verFicha(id){const p=this.proc(id);if(!p)return;this.fichaId=id;const c=this.cliente(p.clienteId);
 const ands=this.data.andamentos.filter(a=>a.processoId===id).sort((a,b)=>(b.data||'').localeCompare(a.data||''));
 const przs=this.data.prazos.filter(z=>z.processoId===id);
@@ -375,7 +311,7 @@ let html='<div class="ficha-top"><div class="cnj-big">'+esc(p.numeroCNJ)+'</div>
 html+='<div class="subcard"><h4>Dados do Processo</h4><div class="fgrid">'+
 [['Comarca',p.comarca],['Vara / Cartório',p.vara],['Fase',p.fase],['Polo',p.polo],['Advogado',p.advogado],['Valor da Causa',p.valorCausa?fmtMoeda(p.valorCausa):'—']].map(x=>'<div><small style="color:var(--cinza);font-weight:700">'+x[0]+'</small><div>'+esc(x[1]||'—')+'</div></div>').join('')+'</div>'+(p.obs?'<div style="margin-top:.6rem;font-size:.82rem"><strong>Obs.:</strong> '+esc(p.obs)+'</div>':'')+'</div>';
 html+='<div class="subcard"><h4>Andamentos ('+ands.length+')</h4>'+(ands.length?ands.map(a=>'<div style="padding:.4rem 0;border-bottom:1px dashed var(--borda);font-size:.82rem"><strong>'+fmtData(a.data)+'</strong> · '+esc(a.tipo)+'<br>'+esc(a.descricao)+'</div>').join(''):'<div style="color:var(--cinza);font-size:.82rem">Nenhum andamento registrado.</div>')+'</div>';
-html+='<div class="subcard"><h4>Prazos ('+przs.length+')</h4>'+(przs.length?przs.map(z=>'<div style="font-size:.82rem;padding:.3rem 0">👉 <strong>'+esc(z.motivo||'—')+'</strong></div>').join(''):'<div style="color:var(--cinza);font-size:.82rem">Nenhum prazo cadastrado.</div>')+'</div>';
+html+='<div class="subcard"><h4>Prazos ('+przs.length+')</h4>'+(przs.length?przs.map(z=>'<div style="font-size:.82rem;padding:.3rem 0">👉 <strong>'+esc(z.motivo||'—')+'</strong> — vence '+fmtData(this.vencimento(z))+' <span class="badge '+(z.status==='Concluído'?'b-verde':z.status==='Cancelado'?'b-cinza':'b-amarelo')+'">'+esc(z.status)+'</span></div>').join(''):'<div style="color:var(--cinza);font-size:.82rem">Nenhum prazo cadastrado.</div>')+'</div>';
 document.getElementById('fichaConteudo').innerHTML=html;document.getElementById('mdFicha').classList.add('aberto')},
 renderClientes(){const d=this.data;
 document.getElementById('tblClientes').innerHTML='<thead><tr><th>Nome</th><th>CPF/CNPJ</th><th>Cidade</th><th>Telefone</th><th>Processos</th><th>Ações</th></tr></thead><tbody>'+
